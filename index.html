@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片墙⭐</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>照片墙⭐</h1>
+        <p class="subtitle">记录美好时光</p>
+    </header>
+
+    <main>
+        <div class="photo-grid" id="photoGrid">
+            <!-- 照片将通过JavaScript动态加载 -->
+        </div>
+    </main>
+
+    <!-- 灯箱模态框 -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-container">
+            <span class="close-btn" id="closeBtn">&times;</span>
+            <span class="prev-btn" id="prevBtn">&#10094;</span>
+            <span class="next-btn" id="nextBtn">&#10095;</span>
+            
+            <div class="lightbox-content">
+                <img src="" alt="" id="lightboxImg">
+                <div class="lightbox-info">
+                    <p id="imageTitle"></p>
+                    <div class="lightbox-actions">
+                        <a href="#" class="download-btn" id="downloadBtn" download>
+                            <span>📥</span> 下载原图
+                        </a>
+                        <span class="image-counter" id="imageCounter"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>正在加载照片...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

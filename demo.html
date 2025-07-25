@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片墙⭐ - 演示版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>照片墙⭐</h1>
+        <p class="subtitle">演示版本 - 使用占位符图片</p>
+    </header>
+
+    <main>
+        <div class="photo-grid" id="photoGrid">
+            <!-- 照片将通过JavaScript动态加载 -->
+        </div>
+    </main>
+
+    <!-- 灯箱模态框 -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-container">
+            <span class="close-btn" id="closeBtn">&times;</span>
+            <span class="prev-btn" id="prevBtn">&#10094;</span>
+            <span class="next-btn" id="nextBtn">&#10095;</span>
+            
+            <div class="lightbox-content">
+                <img src="" alt="" id="lightboxImg">
+                <div class="lightbox-info">
+                    <p id="imageTitle"></p>
+                    <div class="lightbox-actions">
+                        <a href="#" class="download-btn" id="downloadBtn" download>
+                            <span>📥</span> 下载原图
+                        </a>
+                        <span class="image-counter" id="imageCounter"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>正在加载照片...</p>
+    </div>
+
+    <script>
+        // 演示版本 - 使用在线占位符图片
+        const demoPhotos = [
+            {
+                thumbnail_url: "https://picsum.photos/400/400?random=1",
+                high_res_url: "https://picsum.photos/1200/1200?random=1",
+                alt: "随机图片 1",
+                placeholder_color: "#c5a691"
+            },
+            {
+                thumbnail_url: "https://picsum.photos/400/400?random=2",
+                high_res_url: "https://picsum.photos/1200/1200?random=2",
+                alt: "随机图片 2",
+                placeholder_color: "#4a5a6a"
+            },
+            {
+                thumbnail_url: "https://picsum.photos/400/400?random=3",
+                high_res_url: "https://picsum.photos/1200/1200?random=3",
+                alt: "随机图片 3",
+                placeholder_color: "#9b8a82"
+            },
+            {
+                thumbnail_url: "https://picsum.photos/400/400?random=4",
+                high_res_url: "https://picsum.photos/1200/1200?random=4",
+                alt: "随机图片 4",
+                placeholder_color: "#7b9bb5"
+            },
+            {
+                thumbnail_url: "https://picsum.photos/400/400?random=5",
+                high_res_url: "https://picsum.photos/1200/1200?random=5",
+                alt: "随机图片 5",
+                placeholder_color: "#a8c4a2"
+            },
+            {
+                thumbnail_url: "https://picsum.photos/400/400?random=6",
+                high_res_url: "https://picsum.photos/1200/1200?random=6",
+                alt: "随机图片 6",
+                placeholder_color: "#d4a574"
+            }
+        ];
+
+        // 修改script.js中的loadPhotos函数来使用演示数据
+        document.addEventListener('DOMContentLoaded', () => {
+            const photoGrid = document.getElementById('photoGrid');
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const closeBtn = document.getElementById('closeBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const imageTitle = document.getElementById('imageTitle');
+            const imageCounter = document.getElementById('imageCounter');
+            const loading = document.getElementById('loading');
+
+            let photos = demoPhotos;
+            let currentIndex = 0;
+
+            // 直接使用演示数据初始化
+            createPhotoGrid();
+            setupEventListeners();
+            hideLoading();
+
+            // 其余代码与script.js相同...
+            function createPhotoGrid() {
+                photoGrid.innerHTML = '';
+                
+                photos.forEach((photo, index) => {
+                    const item = createPhotoItem(photo, index);
+                    photoGrid.appendChild(item);
+                });
+            }
+
+            function createPhotoItem(photo, index) {
+                const item = document.createElement('div');
+                item.className = 'photo-item';
+                
+                item.style.backgroundColor = photo.placeholder_color;
+                item.style.backgroundImage = `linear-gradient(135deg, ${photo.placeholder_color}, ${adjustBrightness(photo.placeholder_color, 20)})`;
+
+                const img = document.createElement('img');
+                img.src = photo.thumbnail_url;
+                img.alt = photo.alt;
+                img.loading = 'lazy';
+
+                img.onload = () => {
+                    img.classList.add('loaded');
+                };
+
+                img.onerror = () => {
+                    console.error(`图片加载失败: ${photo.thumbnail_url}`);
+                    item.style.backgroundImage = `linear-gradient(135deg, #ddd, #bbb)`;
+                    item.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666;">图片加载失败</div>';
+                };
+
+                item.addEventListener('click', () => {
+                    openLightbox(index);
+                });
+
+                item.appendChild(img);
+                return item;
+            }
+
+            function adjustBrightness(color, percent) {
+                const num = parseInt(color.replace("#", ""), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+            }
+
+            function openLightbox(index) {
+                currentIndex = index;
+                const photo = photos[currentIndex];
+                
+                lightboxImg.src = photo.high_res_url;
+                lightboxImg.alt = photo.alt;
+                downloadBtn.href = photo.high_res_url;
+                downloadBtn.download = `photo_${index + 1}.jpg`;
+                imageTitle.textContent = photo.alt;
+                imageCounter.textContent = `${index + 1} / ${photos.length}`;
+                
+                lightbox.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+
+            function showPrevImage() {
+                currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+                openLightbox(currentIndex);
+            }
+
+            function showNextImage() {
+                currentIndex = (currentIndex + 1) % photos.length;
+                openLightbox(currentIndex);
+            }
+
+            function setupEventListeners() {
+                closeBtn.addEventListener('click', closeLightbox);
+                prevBtn.addEventListener('click', showPrevImage);
+                nextBtn.addEventListener('click', showNextImage);
+
+                lightbox.addEventListener('click', (e) => {
+                    if (e.target === lightbox || e.target.classList.contains('lightbox-overlay')) {
+                        closeLightbox();
+                    }
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (!lightbox.classList.contains('show')) return;
+                    
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                            showPrevImage();
+                            break;
+                        case 'ArrowRight':
+                            showNextImage();
+                            break;
+                        case 'Escape':
+                            closeLightbox();
+                            break;
+                    }
+                });
+
+                let touchStartX = 0;
+                let touchEndX = 0;
+
+                lightbox.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                });
+
+                lightbox.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                });
+
+                function handleSwipe() {
+                    const swipeThreshold = 50;
+                    const diff = touchStartX - touchEndX;
+                    
+                    if (Math.abs(diff) > swipeThreshold) {
+                        if (diff > 0) {
+                            showNextImage();
+                        } else {
+                            showPrevImage();
+                        }
+                    }
+                }
+            }
+
+            function hideLoading() {
+                loading.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
